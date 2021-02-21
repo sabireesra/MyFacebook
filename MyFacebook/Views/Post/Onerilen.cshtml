@@ -1,0 +1,26 @@
+﻿@using MyFacebook.Models
+@model IEnumerable<User>
+@{
+    Layout = null;
+}
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        @foreach (var item in Model)
+        {
+            <div class="media">
+                <div class="media-left">
+                    <img src="http://placehold.it/32x32" alt="" class="media-object img-rounded">
+                </div>
+                <div class="media-body">
+                    <form action="/Post/AddFriend" method="Post">
+                        <h4 name="Name" class="media-heading">@item.UserName</h4>
+                        <a href="/Post/AddFriend/@item.Id" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>  Add Friend</a>
+                    </form>
+                </div>
+            </div>
+
+        }
+    </div>
+</div>
+

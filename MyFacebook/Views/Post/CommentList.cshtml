@@ -1,0 +1,280 @@
+﻿@using MyFacebook.SessionModel
+@using MyFacebook.Models
+@model IEnumerable<PostDto>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facebook</title>
+    <link href="~/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/style.css" rel="stylesheet" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+</head>
+<body>    
+
+    <main class="container">
+        <div class="row">
+
+            <div class="col-md-6">
+                <!-- post form -->
+                <hr>
+                <!-- ./post form -->
+                <!-- feed -->
+                <div>
+                    <!-- post -->
+                    @{var data = SessionSet<User>.Get("login");}
+                    @{
+
+                        DatabaseContext dbc = new DatabaseContext();
+                        var model1 = dbc.UserFriends.ToList();
+                        var model2 = dbc.Posts.ToList();
+                        var model3 = dbc.Users.ToList();
+                        var model4 = dbc.Likes.ToList();
+                        var name = model3.Where(k => k.Id == data.Id).FirstOrDefault();
+
+
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <div class="media">
+                            <a class="media-left" href="#">
+                                <img alt="" class="media-object img-rounded" src="http://placehold.it/100x100">
+                            </a>
+                            <div class="media-body ">
+                                <h4 class="media-heading ">@item.UserName</h4>
+                                <p>@item.Body</p>
+                                <ul class="nav nav-pills nav-pills-custom">
+                                    <li><a data-toggle="modal" data-target="#myModal2" id="TLikeModal" onclick="GetData(@item.Id)"><span class="glyphicon glyphicon-hand-right color"></span> @model4.Where(k => k.ParentId == item.Id).Count()</a></li>
+                                    <li>
+                                        <a data-toggle="modal" data-target="#myModal3" id="TRepostModal" onclick="modalRepost(@item.Id)">
+                                            <span class="glyphicon glyphicon-share-alt" aria-hidden="true"> </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a data-toggle="modal" data-target="#myModal4" id="TCommModal" onclick="modalTrik(@item.Id)">
+                                            <span class="glyphicon glyphicon-comment color" aria-hidden="true"></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="/Post/CommentList/@item.Id"><span class="glyphicon glyphicon-list color"></span></a>
+                                    </li>
+                                    <li><a href="/Post/Delete?id=@item.Id"><span class="glyphicon glyphicon-trash color"></span></a></li>
+                                    <li><a href="#"><span class="glyphicon glyphicon-option-horizontal color"></span></a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
+
+
+                    <!-- ./post -->
+                </div>
+                <!-- ./feed -->
+            </div>
+
+        </div>
+    </main>
+
+
+    <script src="~/js/bootstrap.min.js"></script>
+    <script src="~/js/script.js"></script>
+
+
+    <div class="container">
+        <div class="modal fade" id="myModal3">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5>Bu gönderiyi paylaşmak üzeresiniz...</h5>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="row">
+                            <div class="col-md-4 offset-7">
+                                <div class="btn-group pt-3 " role="group" aria-label="Basic example">
+                                    <button type="submit" id="addRepost" class="btn btn-primary glyphicon glyphicon-share-alt">Share </button>
+
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal"> Close</button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="container">
+        <div class="modal fade" id="myModal2">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5>Bu gönderiyi beğenmek üzeresiniz...</h5>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="row">
+                            <div class="col-md-4 offset-7">
+                                <div class="btn-group pt-3 " role="group" aria-label="Basic example">
+                                    <button type="submit" id="addLike" class="btn btn-primary glyphicon glyphicon-hand-right">Like </button>
+
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal"> Close</button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="container">
+        <div class="modal fade" id="myModal4">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5>Comments</h5>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="card-body">
+                            <textarea name="body" id="myComment" class="form-control shadow-sm" placeholder=" " maxlength="250"></textarea>
+                            <div class="row">
+                                <div class="col-md-4 offset-7">
+                                    <div class="btn-group pt-3 " role="group" aria-label="Basic example">
+                                        <button type="submit" id="addComment" class="btn btn-primary glyphicon glyphicon-comment">Comment</button>
+
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <script>
+        var cid;
+
+
+        function modalRepost(id) {
+            cid = id;
+            body = cid.Body;
+            $.getJSON("http://localhost:53909/Home/GetPost/" + id, function (data) {
+                console.log(data);
+                for (i in data) {
+                    var o = document.createElement("option");
+                    $(o).html(data[i].UserName);
+                    $(o).html(data[i].Body);
+                    $('#RePosts').append(o);
+                }
+
+            });
+        }
+
+        $("#addRepost").click(function (e) {
+            var text = body;
+            $.ajax({
+                type: "POST",
+                url: "/Home/RePost",
+                data: { "text": text, "postId": cid }
+            }).done(function (data) {
+                if (data.result) {
+                    modalRepost(cid);
+                    location.reload();
+
+                } else {
+                    alert("bir hata oldu.")
+                }
+            }).fail(function () {
+                alert("Server Error!!!")
+            })
+        });
+
+        function GetData(id) {
+            cid = id;
+            postBody = cid.Body;
+            $.getJSON("http://localhost:53909/Home/GetLike/" + id, function (data) {
+                for (i in data) {
+                    var o = document.createElement("option");
+                    $(o).html(data[i].UserName);
+                    $(o).html(data[i].Body);
+                    $('#Likes').append(o);
+
+                }
+            });
+        }
+
+
+
+        $("#addLike").click(function (e) {
+            var text = postBody;
+            $.ajax({
+                type: "POST",
+                url: "/Home/AddLike",
+                data: { "text": text, "postId": cid }
+            }).done(function (data) {
+
+                if (data.result) {
+                    GetData(cid);
+                    location.reload();
+                } else {
+                    alert("Beğenirken bir hata meydana geldi.")
+                }
+
+
+            }).fail(function () {
+                alert("Server Error!!!")
+            })
+        });
+
+
+
+        function modalTrik(id) {
+            cid = id;
+            $.getJSON("http://localhost:53909/Home/GetComment/" + id, function (data) {
+                console.log(data);
+                var json_obj = $.parseJSON(JSON.stringify(data));
+                var output = "<ul class='list-group'>";
+                for (var i in json_obj) {
+                    output += "<li class='list-group-item'><h5 class='mb - 1'> " + json_obj[i].UserName + "</small></h5>" + json_obj[i].CommentBody + "</li>";
+                }
+                output += "</ul>";
+                $('#ModalBody').html(output);
+            });
+        }
+
+        $("#addComment").click(function (e) {
+            var text = $('#myComment').val();
+            $.ajax({
+                type: "POST",
+                url: "/Home/AddComment",
+                data: { "text": text, "postId": cid }
+            }).done(function (data) {
+                if (data.result) {
+                    modalTrik(cid);
+                    alert("İşlem Başarılı!")
+                } else {
+                    alert("Yorum Eklemede hata oldu")
+                }
+            }).fail(function () {
+                alert("Server Error!!!")
+            })
+        });
+
+    </script>
+
+</body>
+</html>

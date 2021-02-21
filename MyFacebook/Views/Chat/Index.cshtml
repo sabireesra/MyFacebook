@@ -1,0 +1,60 @@
+﻿@using MyFacebook.SessionModel
+@using MyFacebook.Models
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <script src="~/Scripts/jquery-1.6.4.min.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.1.0.min.js"></script>
+    <script src="~/SignalR/Hubs"></script>
+    <script>
+        $(function () {
+            var chat = $.connection.chatHub;
+            var $username = $('#txtUsername');
+            var $message = $('#txtMessage');
+            var $messages = $('#messages');
+            $message.focus();
+            chat.client.sendMessage = function (name, message) {
+                $messages.append('<li><strong>' + name + '</strong>: ' + message + '</li>');
+            };
+            $.connection.hub.start().done(function () {
+                $('#btnSendMessage').click(function () {
+
+                    chat.server.send($username.val(), $message.val());
+
+                    $message.val('').focus();
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    @{ var data = SessionSet<User>.Get("login");}
+
+
+    <div class="row">
+        <a href="/Home/Index"><span class="btn btn-block fa fa-home" style="font-size:36px;"></span> Back to Home</a>
+        <br />        <br />
+        <label for="txtUserName" style="line-height:80px;color:black;font-weight:bold;">Username: </label>@Html.TextBox("txtUsername", data.UserName)
+        <br />
+        &nbsp;
+        <label for="txtMessage" style="color:black;font-weight:bold;">Message:  </label> @Html.TextBox("txtMessage")
+
+        <button id="btnSendMessage">Mesaj Yolla</button>
+        &nbsp;
+        &nbsp;
+        &nbsp;
+        &nbsp;
+
+
+
+    </div>
+    <div id="messages"> </div>
+</body>
+</html>

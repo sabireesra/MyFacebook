@@ -1,0 +1,165 @@
+﻿@using MyFacebook.SessionModel
+@using MyFacebook.Models
+@model IEnumerable<UserFriends>
+@*@{ Layout = null;}*@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facebook</title>
+    <link href="~/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/style.css" rel="stylesheet" />
+
+
+</head>
+<body>
+    @{var data = SessionSet<User>.Get("login");}
+    @{
+        DatabaseContext dbc = new DatabaseContext();
+        var model1 = dbc.UserFriends.ToList();
+        var model2 = dbc.Posts.ToList();
+        var model3 = dbc.Users.ToList();
+        var name = model3.Where(k => k.Id == data.Id).FirstOrDefault();
+    }
+    <!-- nav -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/Home/Index">Facebook</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/Home/Index"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+                <li><a href="/ChatHub/Index"><span class="glyphicon glyphicon-envelope"></span> Messages</a></li>
+                <li><a href="/Profil/Index"><span class="glyphicon glyphicon-user"></span> Profile</a></li>
+                <li><a href="/Login/LogOff"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+    <!-- ./nav -->
+    <!-- main -->
+    <main class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <!-- profile brief -->
+                <div class="panel panel-default">
+                    <div class="row"> <br /></div>
+                    <div class="row">
+                        <div class="col-xs-3"></div>
+                        <div class="col-xs-6">
+                            <a class="media-left" href="/Profil/Index">
+                                <img alt="" class="media-object img-rounded center-block" src="http://placehold.it/120x120">
+                            </a>
+                        </div>
+                        <div class="col-xs-3"></div>
+                    </div>
+
+
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-3"></div>
+                            <div class="col-xs-6">
+                                <h5>
+                                    <large>@data.UserName</large>
+                                    <a href="/Profil/Index"></a>
+                                </h5>
+                            </div>
+                            <div class="col-xs-3"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-3"></div>
+                            <div class="col-xs-6">
+                                <h5>
+                                    <large>
+                                        <a href="/Profil/Friends">Friends - @model1.Where(x => x.UserId == data.Id).Count()</a>
+                                    </large>
+                                </h5>
+                            </div>
+                            <div class="col-xs-3"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6">
+                <!-- post form -->
+                <div class="input-group">
+                    <input class="form-control" type="text" name="content" placeholder="Make a post...">
+                    <span class="input-group-btn">
+                        <button class="btn btn-success" type="button" name="post" data-toggle="modal" data-target="#myModal0">Post</button>
+                    </span>
+                </div>
+                <hr>
+                <!-- ./post form -->
+                <!-- feed -->
+                <div>
+
+                    @foreach (var item in Model)
+                    {
+                        <div class="media">
+                            <div class="media-left">
+                                <img src="http://placehold.it/32x32" alt="" class="media-object img-rounded">
+                            </div>
+                            <div class="media-body">
+                                <form action="/Profile/Follow" method="get">
+                                    <h4 name="Name" class="media-heading">@item.User.UserName</h4>
+
+
+                                    <a href="/Post/RemoveFriend/@item.FriendId" class="btn btn-default btn-xs">
+                                        <span class="glyphicon glyphicon-remove"></span> Remove Friend
+                                    </a>
+                                </form>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+                <!-- ./feed -->
+            </div>
+
+
+            <div class="col-md-3">
+                @Html.Action("Onerilen", "Post")
+            </div>
+
+        </div>
+    </main>
+
+
+    <script src="~/js/bootstrap.min.js"></script>
+    <script src="~/js/script.js"></script>
+
+    <div class="container">
+        <!-- Trigger the modal with a button -->
+        <!-- Modal -->
+        <form action="/Post/AddPost" method="post">
+            <div class="modal fade" id="myModal0" role="dialog">
+                <div class="modal-dialog">
+
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Create New Post</h4>
+                        </div>
+                        <div class="modal-body">
+                            <textarea class="form-control" name="Body"></textarea>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Share</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+</body>
+</html>
